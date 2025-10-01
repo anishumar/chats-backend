@@ -9,6 +9,9 @@ import { VerifyToken, VerifySocketToken } from "./middlewares/VerifyToken.js";
 import chatRoomRoutes from "./routes/chatRoom.js";
 import chatMessageRoutes from "./routes/chatMessage.js";
 import userRoutes from "./routes/user.js";
+import v1Users from "./routes/v1/users.js";
+import v1ChatRooms from "./routes/v1/chatRooms.js";
+import v1Messages from "./routes/v1/messages.js";
 
 const app = express();
 
@@ -22,9 +25,15 @@ app.use(VerifyToken);
 
 const PORT = Number(process.env.PORT) || 8080;
 
+// legacy routes
 app.use("/api/room", chatRoomRoutes);
 app.use("/api/message", chatMessageRoutes);
 app.use("/api/user", userRoutes);
+
+// v1 routes
+app.use("/api/v1", v1Users);
+app.use("/api/v1", v1ChatRooms);
+app.use("/api/v1", v1Messages);
 
 function bindSockets(serverInstance) {
   const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:5173")
@@ -66,22 +75,18 @@ function bindSockets(serverInstance) {
   });
 }
 
-function startServer(preferredPort, attempt = 0) {
+function startServer(preferredPort) {
   const server = app
     .listen(preferredPort, () => {
       console.log(`Server listening on port ${preferredPort}`);
       bindSockets(server);
     })
     .on("error", (err) => {
-      if (err && err.code === "EADDRINUSE" && attempt < 10) {
-        const nextPort = preferredPort + 1;
-        console.warn(
-          `Port ${preferredPort} in use, retrying on ${nextPort} (attempt ${attempt + 1})`
-        );
-        startServer(nextPort, attempt + 1);
-      } else {
-        throw err;
+      if (err && err.code === "EADDRINUSE") {
+        console.error(`Port ${preferredPort} is already in use. Exiting.`);
+        process.exit(1);
       }
+      throw err;
     });
 }
 
