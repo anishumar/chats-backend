@@ -1,0 +1,32 @@
+# dependencies
+/node_modules
+
+# logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# env and secrets
+.env
+.env.local
+.env.*.local
+config/serviceAccountKey.json
+
+# build artifacts
+/dist
+/build
+.cache/
+
+# coverage
+/coverage
+
+# editors
+.DS_Store
+.vscode/
+.idea/
+
+# npm cache
+.npm
